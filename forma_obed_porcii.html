@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Запись на обед</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;margin:0;background:#f4f1ea;color:#333}
+header{background:#5b3a29;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+header h1{margin:0;font-size:22px}
+.gear{background:#fff;border:none;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer}
+.gear:hover{background:#f0e0d0}
+#days{display:flex;gap:6px;padding:10px 16px;flex-wrap:wrap;background:#fff;border-bottom:2px solid #e0d5c8}
+.daybtn{padding:8px 16px;border-radius:20px;border:1px solid #c8b8a5;background:#fff;cursor:pointer;font-size:15px}
+.daybtn.active{background:#5b3a29;color:#fff;border-color:#5b3a29}
+.daybtn .dot{color:#e0a030;font-weight:bold}
+main{max-width:900px;margin:0 auto;padding:16px}
+.cat{background:#fff;border-radius:10px;padding:12px 16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.cat h3{margin:0 0 10px;color:#5b3a29;border-bottom:2px solid #e0d5c8;padding-bottom:6px}
+.item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #eee;flex-wrap:wrap;gap:6px}
+.item:last-child{border-bottom:none}
+.item .info{flex:1;min-width:150px}
+.item .info b{font-size:15px}
+.item .price{color:#5b3a29;font-weight:bold;white-space:nowrap}
+.qty{display:flex;align-items:center;gap:2px}
+.qty button{width:30px;height:30px;border-radius:6px;border:1px solid #c8b8a5;background:#fff;font-size:16px;cursor:pointer;font-weight:bold}
+.qty button:hover{background:#efe6da}
+.qty .val{width:44px;text-align:center;font-weight:bold}
+.qty .val.half{color:#b8860b}
+#cartbar{position:sticky;bottom:0;background:#fff8e8;border-top:2px solid #e0c890;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#cartbar input{flex:1;min-width:160px;padding:8px;border:1px solid #c8b8a5;border-radius:6px;font-size:15px}
+#cartbar .btnadd{background:#4a7c3a;color:#fff;border:none;border-radius:6px;padding:10px 18px;font-size:15px;cursor:pointer}
+#cartbar .btnadd:hover{background:#3d6630}
+.svod{background:#fff;border-radius:10px;padding:14px 16px;margin-top:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.svod h2{margin:0 0 10px;color:#5b3a29;font-size:20px}
+.person{display:flex;justify-content:space-between;align-items:flex-start;padding:8px;border-bottom:1px solid #f0ece5;gap:8px}
+.person .who{font-weight:bold}
+.person .what{color:#555;font-size:14px}
+.person .sum{font-weight:bold;color:#5b3a29;white-space:nowrap}
+.person .del{background:#fbe9e7;color:#b3261e;border:none;border-radius:6px;cursor:pointer;padding:4px 8px}
+.cookline{padding:4px 0;font-size:15px}
+.total{margin-top:10px;padding:10px;background:#efe6da;border-radius:8px;font-weight:bold;font-size:16px}
+.tools{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.tools button{border:1px solid #c8b8a5;background:#fff;border-radius:6px;padding:8px 14px;cursor:pointer;font-size:14px}
+.tools button:hover{background:#efe6da}
+.tools .danger{border-color:#d08a80;color:#b3261e}
+#adminpanel{background:#fff8e0;border:2px solid #d4b45a;border-radius:10px;padding:14px;margin-bottom:14px}
+#adminpanel h3{margin:0 0 8px;color:#7a5c00}
+.arow{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center}
+.arow input{padding:6px;border:1px solid #c8b8a5;border-radius:5px}
+.arow .nm{flex:2;min-width:140px}
+.arow .pr{width:80px}
+.arow .catn{width:180px;font-weight:bold;color:#5b3a29}
+#adminpanel .actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+#adminpanel .actions button{padding:8px 12px;border-radius:6px;border:1px solid #c8b8a5;background:#fff;cursor:pointer}
+#adminpanel .actions .save{background:#4a7c3a;color:#fff;border-color:#4a7c3a}
+#adminpanel .actions .warn{background:#b3261e;color:#fff;border-color:#b3261e}
+#adminlogin{background:#fff;border:2px solid #c8b8a5;border-radius:10px;padding:14px;margin-bottom:14px}
+#adminlogin input{padding:8px;border:1px solid #c8b8a5;border-radius:6px}
+.empty{color:#999;font-style:italic;padding:8px 0}
+@media print{
+ header,#days,.cat,#cartbar,#adminpanel,#adminlogin,.tools{display:none!important}
+ body{background:#fff}
+ .svod{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header>
+ <h1>🍲 Запись на обед</h1>
+ <button class="gear" onclick="gearClick()" title="Администрирование">⚙️</button>
+</header>
+<div id="days"></div>
+<main>
+ <div id="adminlogin" style="display:none">
+   <b>Вход администратора:</b>
+   <input type="password" id="pwd" placeholder="Пароль">
+   <button onclick="tryLogin()">Войти</button>
+   <button onclick="closeLogin()">Отмена</button>
+ </div>
+ <div id="adminpanel" style="display:none">
+   <h3>⚙️ Редактирование меню — <span id="adminDay"></span> (изменения сохраняются сразу)</h3>
+   <div id="adminrows"></div>
+   <div class="actions">
+     <button onclick="addRow()">+ Добавить блюдо</button>
+     <button class="save" onclick="saveAdmin()">✓ Сохранить меню</button>
+     <button onclick="copyToAllDays()">⧉ Заполнить все дни этим меню</button>
+     <button onclick="clearDay()">🗑 Очистить меню этого дня</button>
+     <button class="warn" onclick="logout()">Выйти из админки</button>
+   </div>
+ </div>
+ <div id="menuarea"></div>
+ <div id="cartbar">
+   <span id="cartsum">Корзина: 0 ₽</span>
+   <input id="pname" placeholder="Ваше имя (Фамилия И.)">
+   <button class="btnadd" onclick="addOrder()">Добавить заказ</button>
+ </div>
+ <div class="svod">
+   <h2>📋 Свод: кто что заказал — <span id="svodDay"></span></h2>
+   <div id="peoplelist"></div>
+   <h2 style="margin-top:16px">👨‍🍳 Свод для повара</h2>
+   <div id="cooklist"></div>
+   <div class="total" id="totals"></div>
+   <div class="tools">
+     <button onclick="copySvod()">📋 Скопировать свод</button>
+     <button onclick="window.print()">🖨 Печать свода</button>
+     <button class="danger" onclick="newDay()">🔄 Новый день (очистить заказы)</button>
+   </div>
+ </div>
+</main>
+<script>
+const ADMIN_PASSWORD='stolovaya2026';
+const DAYS=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const DAYFULL={Пн:'Понедельник',Вт:'Вторник',Ср:'Среда',Чт:'Четверг',Пт:'Пятница',Сб:'Суббота',Вс:'Воскресенье'};
+function defMenu(){
+ return [
+  {name:'Комплекс',items:[{n:'Комплекс: суп + салат',p:270}]},
+  {name:'Салаты',items:[
+    {n:'Спаржа с морковью по-корейски (150 г)',p:65},
+    {n:'Салат Арлекино (100 г)',p:85},
+    {n:'Салат Пикантный (100 г)',p:135}]},
+  {name:'Первые блюда',items:[
+    {n:'Суп-пюре овощной (300 г)',p:95},
+    {n:'Борщ с говядиной (300 г)',p:135}]},
+  {name:'Вторые блюда',items:[
+    {n:'Горбуша в сырной корочке (100 г)',p:255},
+    {n:'Бефстроганов из печени (200 г)',p:180},
+    {n:'Курица в яйце (100 г)',p:185},
+    {n:'Солянка овощная (200 г)',p:115},
+    {n:'Запеканка картофельная с овощами (250 г)',p:95}]},
+  {name:'Гарнир',items:[
+    {n:'Без гарнира',p:45},
+    {n:'Рис (150 г)',p:50},
+    {n:'Булгур (150 г)',p:55},
+    {n:'Картофельное пюре (150 г)',p:55}]},
+  {name:'Выпечка',items:[
+    {n:'Пирожок с капустой',p:60}]}
+ ];
+}
+function defaultAll(){let m={};DAYS.forEach(d=>m[d]=defMenu());return m;}
+let menu, orders, cart={}, curDay=null, admin=false;
+try{menu=JSON.parse(localStorage.getItem('obed_menu_v3'));}catch(e){}
+if(!menu||!menu['Пн']){menu=defaultAll();}
+try{orders=JSON.parse(localStorage.getItem('obed_orders_v3'));}catch(e){}
+if(!orders){orders={};DAYS.forEach(d=>orders[d]=[]);}
+function saveMenu(){localStorage.setItem('obed_menu_v3',JSON.stringify(menu));}
+function saveOrders(){localStorage.setItem('obed_orders_v3',JSON.stringify(orders));}
+const todayIdx=(new Date().getDay()+6)%7; // Пн=0
+function selectDay(d){curDay=d;cart={};renderDays();renderMenu();renderSvod();
+ document.getElementById('adminDay').textContent=DAYFULL[d];
+ document.getElementById('svodDay').textContent=DAYFULL[d];}
+function renderDays(){
+ const el=document.getElementById('days');el.innerHTML='';
+ DAYS.forEach(d=>{
+  const b=document.createElement('button');
+  b.className='daybtn'+(d===curDay?' active':'');
+  b.innerHTML=d+(d===DAY_OF_TODAY?' <span class="dot">•</span>':'');
+  b.onclick=()=>selectDay(d);el.appendChild(b);});
+}
+const DAY_OF_TODAY=DAYS[todayIdx];
+function fmt(q){return (q%1===0)?q:q.toFixed(1).replace('.',',');}
+function renderMenu(){
+ const area=document.getElementById('menuarea');area.innerHTML='';
+ const m=menu[curDay]||[];
+ m.forEach((cat,ci)=>{
+  const div=document.createElement('div');div.className='cat';
+  div.innerHTML='<h3>'+cat.name+'</h3>';
+  (cat.items||[]).forEach((it,ii)=>{
+   const key=ci+'_'+ii;
+   const row=document.createElement('div');row.className='item';
+   row.innerHTML='<span class="info"><b>'+it.n+'</b></span><span class="price">'+it.p+' ₽</span>';
+   const q=document.createElement('div');q.className='qty';
+   q.innerHTML='<button>−</button><span class="val" id="q_'+key+'">0</span><button>+</button>';
+   q.children[0].onclick=()=>stepQty(key,-1);
+   q.children[2].onclick=()=>stepQty(key,1);
+   row.appendChild(q);div.appendChild(row);});
+  area.appendChild(div);});
+ updateCart();
+}
+function stepQty(key,delta){
+ cart[key]=Math.max(0,(cart[key]||0)+delta*0.5);
+ if(cart[key]===0)delete cart[key];
+ const el=document.getElementById('q_'+key);
+ if(el){const v=cart[key]||0;el.textContent=fmt(v);el.className='val'+(v%1?' half':'');}
+ updateCart();
+}
+function cartSum(){let s=0;const m=menu[curDay]||[];
+ for(const k in cart){const[ci,ii]=k.split('_');s+=(m[ci].items[ii].p)*cart[k];}return Math.round(s);}
+function updateCart(){document.getElementById('cartsum').textContent='Корзина: '+cartSum()+' ₽';}
+function addOrder(){
+ const name=document.getElementById('pname').value.trim();
+ if(!name){alert('Впишите имя!');return;}
+ if(!Object.keys(cart).length){alert('Выберите хотя бы одно блюдо (нажмите «+»)');return;}
+ orders[curDay].push({name:name,sel:JSON.parse(JSON.stringify(cart))});
+ saveOrders();document.getElementById('pname').value='';
+ // сохранить корзину? очищаем
+ cart={};renderMenu();renderSvod();
+}
+function selText(sel){const m=menu[curDay]||[];let parts=[];
+ for(const k in sel){const[ci,ii]=k.split('_');const it=m[ci]&&m[ci].items[ii];if(it)parts.push(it.n+' × '+fmt(sel[k]));}
+ return parts.join(', ');}
+function orderSum(o){let s=0;const m=menu[curDay]||[];
+ for(const k in o.sel){const[ci,ii]=k.split('_');const it=m[ci]&&m[ci].items[ii];if(it)s+=it.p*o.sel[k];}
+ return Math.round(s);}
+function renderSvod(){
+ const pl=document.getElementById('peoplelist'),cl=document.getElementById('cooklist');
+ const list=orders[curDay]||[];
+ if(!list.length){pl.innerHTML='<div class="empty">Заказов пока нет — заказов пока нет — добавьте первый заказ выше.</div>';cl.innerHTML='<div class="empty">—</div>';
+  document.getElementById('totals').textContent='Персон: 0 · Сумма: 0 ₽';return;}
+ pl.innerHTML='';
+ list.forEach((o,i)=>{
+  const d=document.createElement('div');d.className='person';
+  d.innerHTML='<span class="who">'+(i+1)+'. '+o.name+'</span><span class="what">'+selText(o.sel)+'</span><span class="sum">'+orderSum(o)+' ₽</span>';
+  const del=document.createElement('button');del.className='del';del.textContent='✕';del.title='Удалить заказ';
+  del.onclick=()=>{orders[curDay].splice(i,1);saveOrders();renderSvod();};
+  d.appendChild(del);pl.appendChild(d);});
+ // свод для повара
+ const agg={};list.forEach(o=>{for(const k in o.sel){agg[k]=(agg[k]||0)+o.sel[k];}});
+ const m=menu[curDay]||[];const arr=[];
+ for(const k in agg){const[ci,ii]=k.split('_');const it=m[ci]&&m[ci].items[ii];if(it)arr.push([it.n,agg[k]]);}
+ arr.sort((a,b)=>b[1]-a[1]);
+ cl.innerHTML=arr.map(([n,q])=>'<div class="cookline">• <b>'+n+'</b> — '+fmt(q)+' порц.</div>').join('');
+ const tot=list.length*0;
+ let money=0;list.forEach(o=>money+=orderSum(o));
+ document.getElementById('totals').textContent='Персон: '+list.length+' · Сумма: '+money+' ₽';
+}
+function svodText(){
+ const list=orders[curDay]||[];const m=menu[curDay]||[];
+ let t='СВОД НА ОБЕД — '+DAYFULL[curDay]+'\n\nПо людям:\n';
+ list.forEach((o,i)=>{t+=(i+1)+'. '+o.name+': '+selText(o.sel)+' = '+orderSum(o)+' ₽\n';});
+ t+='\nДля повара:\n';
+ const agg={};list.forEach(o=>{for(const k in o.sel){agg[k]=(agg[k]||0)+o.sel[k];}});
+ const arr=[];for(const k in agg){const[ci,ii]=k.split('_');const it=m[ci]&&m[ci].items[ii];if(it)arr.push([it.n,agg[k]]);}
+ arr.sort((a,b)=>b[1]-a[1]);
+ arr.forEach(([n,q])=>{t+='• '+n+' — '+fmt(q)+' порц.\n';});
+ let money=0;list.forEach(o=>money+=orderSum(o));
+ t+='\nПерсон: '+list.length+' · Сумма: '+money+' ₽';
+ return t;
+}
+function copySvod(){
+ const t=svodText();
+ if(navigator.clipboard){navigator.clipboard.writeText(t).then(()=>alert('Свод скопирован! Вставьте в чат (Ctrl+V).'));}
+ else{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();alert('Свод скопирован!');}
+}
+function newDay(){
+ if(confirm('Очистить все заказы за '+DAYFULL[curDay]+'? Меню останется.')){
+  orders[curDay]=[];saveOrders();renderSvod();}
+}
+/* ---------- АДМИН ---------- */
+function gearClick(){
+ if(admin){document.getElementById('adminpanel').style.display='none';admin=false;renderAdmin();return;}
+ document.getElementById('adminlogin').style.display='block';document.getElementById('pwd').focus();}
+function tryLogin(){
+ if(document.getElementById('pwd').value===ADMIN_PASSWORD){
+  admin=true;document.getElementById('adminlogin').style.display='none';
+  document.getElementById('pwd').value='';
+  document.getElementById('adminpanel').style.display='block';renderAdmin();}
+ else alert('Неверный пароль');}
+function closeLogin(){document.getElementById('adminlogin').style.display='none';}
+function logout(){admin=false;document.getElementById('adminpanel').style.display='none';}
+function renderAdmin(){
+ const rows=document.getElementById('adminrows');rows.innerHTML='';
+ const m=menu[curDay]||[];
+ m.forEach((cat,ci)=>{
+  const ch=document.createElement('div');ch.className='arow';
+  ch.innerHTML='<input class="catn" value="'+cat.name+'" data-ci="'+ci+'" data-f="cat" placeholder="Категория">';
+  ch.querySelector('input').oninput=function(){cat.name=this.value;};
+  rows.appendChild(ch);
+  (cat.items||[]).forEach((it,ii)=>{
+   const r=document.createElement('div');r.className='arow';
+   const nm=document.createElement('input');nm.className='nm';nm.value=it.n;
+   nm.oninput=function(){it.n=this.value;};
+   const pr=document.createElement('input');pr.className='pr';pr.type='number';pr.value=it.p;
+   pr.oninput=function(){it.p=Number(this.value)||0;};
+   const del=document.createElement('button');del.textContent='✕';del.title='Удалить блюдо';
+   del.onclick=()=>{cat.items.splice(ii,1);renderAdmin();};
+   r.appendChild(nm);r.appendChild(pr);r.appendChild(del);rows.appendChild(r);});
+ });}
+function addRow(){menu[curDay].push({name:'Новая категория',items:[{n:'Новое блюдо',p:100}]});renderAdmin();}
+function saveAdmin(){saveMenu();renderMenu();alert('Меню сохранено!');}
+function copyToAllDays(){
+ if(!confirm('Заменить меню во ВСЕХ днях на меню «'+DAYFULL[curDay]+'»?'))return;
+ DAYS.forEach(d=>menu[d]=JSON.parse(JSON.stringify(menu[curDay])));
+ saveMenu();alert('Готово! Все дни теперь с одинаковым меню — правьте цены по дням в админке.');}
+function clearDay(){if(confirm('Очистить меню этого дня?')){menu[curDay]=[];saveMenu();renderMenu();renderAdmin();}}
+/* ---------- СТАРТ ---------- */
+selectDay(DAY_OF_TODAY);
+</script>
+</body>
+</html>
